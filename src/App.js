@@ -124,6 +124,11 @@ export default function App(props) {
       path.unshift(node.board);
       node = node.parent;
     }
+    enqueueSnackbar(`Puzzle was successfully solved in ${path.length} steps!`, {
+      variant: "success",
+      autoHideDuration: 5000
+      // anchorOrigin: { vertical: "top", horizontal: "right" }
+    });
     console.log(path);
     let path_step = 0;
     const interval = setInterval(() => {
