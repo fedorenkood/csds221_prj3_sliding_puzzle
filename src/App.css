@@ -85,3 +85,12 @@ body,
 .container .empty {
   opacity: 0;
 }
+
+.row-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.interaction-button {
+  margin: 8px !important;
+}

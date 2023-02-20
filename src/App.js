@@ -157,83 +157,90 @@ export default function App(props) {
           {renderBlocks()}
         </div>
         <div className="controls">
-          <TextField id="outlined-basic" label="Size N" variant="outlined"
-                     error={nError}
-                     helperText={nText}
-                     onChange={(e) => {
-                       const regex = /^[2-6\b]+$/;
-                       if (e.target.value === "" || regex.test(e.target.value)) {
-                         setNField(parseInt(e.target.value));
-                         setNError(false);
-                         setNText('');
-                       } else {
-                         setNError(false);
-                         setNText('N must be a number between 2 and 6.');
-                       }
-                     }}
-          />
-          <TextField id="outlined-basic" label="Size M" variant="outlined"
-                     error={mError}
-                     helperText={mText}
-                     onChange={(e) => {
-                       const regex = /^[2-6\b]+$/;
-                       if (e.target.value === "" || regex.test(e.target.value)) {
-                         setMField(parseInt(e.target.value));
-                         setMError(false);
-                         setMText('');
-                       } else {
-                         setMError(true);
-                         setMText('M must be a number between 2 and 5.');
-                       }
-                     }}
-          />
-          <Button variant="outlined"
-                  onClick={(e) => {
-                    if (!(n===nField && m === mField) && nField > 0 && mField > 0) {
-                      let [arr, emptyIndex, layout] = generateBasicVars(nField, mField);
-                      setN(nField);
-                      setM(mField);
+          <div className="row-container">
+            <TextField id="outlined-basic" label="Size N" variant="outlined"
+                       className="interaction-button"
+                       error={nError}
+                       helperText={nText}
+                       onChange={(e) => {
+                         const regex = /^[2-6\b]+$/;
+                         if (e.target.value === "" || regex.test(e.target.value)) {
+                           setNField(parseInt(e.target.value));
+                           setNError(false);
+                           setNText('');
+                         } else {
+                           setNError(false);
+                           setNText('N must be a number between 2 and 6.');
+                         }
+                       }}
+            />
+            <TextField id="outlined-basic" label="Size M" variant="outlined"
+                       className="interaction-button"
+                       error={mError}
+                       helperText={mText}
+                       onChange={(e) => {
+                         const regex = /^[2-6\b]+$/;
+                         if (e.target.value === "" || regex.test(e.target.value)) {
+                           setMField(parseInt(e.target.value));
+                           setMError(false);
+                           setMText('');
+                         } else {
+                           setMError(true);
+                           setMText('M must be a number between 2 and 5.');
+                         }
+                       }}
+            />
+          </div>
+          <div className="row-container">
+            <Button variant="outlined"
+                    className="interaction-button"
+                    onClick={(e) => {
+                      if (!(n===nField && m === mField) && nField > 0 && mField > 0) {
+                        let [arr, emptyIndex, layout] = generateBasicVars(nField, mField);
+                        setN(nField);
+                        setM(mField);
+                        setPositions(arr);
+                        setEmptyIndex(emptyIndex);
+                        setLayout(layout);
+                      }
+                    }}
+            >Update Size</Button>
+            <Button variant="outlined"
+                    className="interaction-button"
+                    onClick={(e) => {
+                      let [arr, emptyIndex, layout] = generateBasicVars(n, m);
                       setPositions(arr);
                       setEmptyIndex(emptyIndex);
                       setLayout(layout);
-                    }
-                  }}
-          >Update Size</Button>
-          <Button variant="outlined"
-                  onClick={(e) => {
-                    let [arr, emptyIndex, layout] = generateBasicVars(n, m);
-                    setPositions(arr);
-                    setEmptyIndex(emptyIndex);
-                    setLayout(layout);
-                  }}
-          >Reset</Button>
-          <Button variant="outlined"
-                  onClick={(e) => {
-                    let board = positions;
-                    for (let i = 0; i < 10; i++) {
-                      board = shuffle(board);
-                    }
-                    setPositions(board);
-                  }}
-          >Shuffle</Button>
-          <Button variant="outlined"
-                  onClick={(e) => {
-                    if (n*m <= 20) {
-                      const res1 = run(solvePuzzle, 5000);
-                      console.log("run(A,1000) = " + res1); //halted
-                    } else {
-                      enqueueSnackbar('The maximum size of sliding puzzle that is solvable is 4x5!', {
-                        variant: "error",
-                        autoHideDuration: 5000
-                        // anchorOrigin: { vertical: "top", horizontal: "right" }
-                      });
-                    }
+                    }}
+            >Reset</Button>
+            <Button variant="outlined"
+                    className="interaction-button"
+                    onClick={(e) => {
+                      let board = positions;
+                      for (let i = 0; i < 10; i++) {
+                        board = shuffle(board);
+                      }
+                      setPositions(board);
+                    }}
+            >Shuffle</Button>
+            <Button variant="outlined"
+                    className="interaction-button"
+                    onClick={(e) => {
+                      if (n*m <= 20) {
+                        const res1 = run(solvePuzzle, 5000);
+                        console.log("run(A,1000) = " + res1); //halted
+                      } else {
+                        enqueueSnackbar('The maximum size of sliding puzzle that is solvable is 4x5!', {
+                          variant: "error",
+                          autoHideDuration: 5000
+                          // anchorOrigin: { vertical: "top", horizontal: "right" }
+                        });
+                      }
 
-                  }}
-          >Solve</Button>
-          <Typography variant="p" component="div" >
-            FRAMEWORKS
-          </Typography>
+                    }}
+            >Solve</Button>
+          </div>
         </div>
       </div>)
 }
