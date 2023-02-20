@@ -4,31 +4,11 @@ import * as React from 'react';
 import {PuzzleState, SlidingPuzzleGame} from './PuzzleGame';
 import Button from '@mui/material/Button';
 import {TextField, Typography} from "@mui/material";
+import {SnackbarProvider, useSnackbar} from "notistack";
 
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
 function range(size, startAt = 0) {
   return [...Array(size).keys()].map(i => i + startAt);
 }
-
 
 class App extends React.Component {
   constructor(props) {
@@ -39,6 +19,10 @@ class App extends React.Component {
     this.state = {
       n: n,
       m: m,
+      nError: false,
+      mError: false,
+      nText: '',
+      mText: '',
       nField: n,
       mField: m,
       positions: arr,
@@ -46,6 +30,7 @@ class App extends React.Component {
       layout: layout,
     }
   }
+
   findIndex(board, item) {
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[0].length; j++) {
@@ -139,17 +124,37 @@ class App extends React.Component {
           </div>
           <div className="controls">
             <TextField id="outlined-basic" label="Size N" variant="outlined"
-                       onChange={(e) => {this.setState({nField: e.target.value});}}
+                       error={this.state.nError}
+                       helperText={this.state.nText}
+                       onChange={(e) => {
+                         const regex = /^[2-6\b]+$/;
+                         if (e.target.value === "" || regex.test(e.target.value)) {
+                           this.setState({nField: e.target.value, nError: false, nText: ''});
+                         } else {
+                           this.setState({nError: true, nText: 'N must be a number between 2 and 6.'});
+                         }
+                       }}
             />
             <TextField id="outlined-basic" label="Size M" variant="outlined"
-                       onChange={(e) => {this.setState({mField: e.target.value});}}
+                       error={this.state.mError}
+                       helperText={this.state.mText}
+                       onChange={(e) => {
+                         const regex = /^[2-6\b]+$/;
+                         if (e.target.value === "" || regex.test(e.target.value)) {
+                           this.setState({mField: e.target.value, mError: false, mText: ''});
+                         } else {
+                           this.setState({mError: true, mText: 'M must be a number between 2 and 5.'});
+                         }
+                       }}
             />
             <Button variant="outlined"
                     onClick={(e) => {
                       let n = this.state.nField;
                       let m = this.state.mField;
-                      let [arr, emptyIndex, layout] = this.generateBasicVars(n, m);
-                      this.setState({n: n, m: m, positions: arr, emptyIndex: emptyIndex, layout: layout})
+                      if (!(n===this.state.n && m === this.state.m) && this.state.n > 0 && this.state.m > 0) {
+                        let [arr, emptyIndex, layout] = this.generateBasicVars(n, m);
+                        this.setState({n: n, m: m, positions: arr, emptyIndex: emptyIndex, layout: layout})
+                      }
                     }}
             >Update Size</Button>
             <Button variant="outlined"
@@ -164,20 +169,25 @@ class App extends React.Component {
             <Button variant="outlined"
                     onClick={(e) => {
                       let {n, m, positions} = this.state;
-                      let solver = new SlidingPuzzleGame(n, m);
-                      let node = solver.solve(positions);
-                      const path = [];
-                      while (node) {
-                        path.unshift(node.board);
-                        node = node.parent;
+                      if (n *m <= 20) {
+                        let solver = new SlidingPuzzleGame(n, m);
+                        let node = solver.solve(positions);
+                        const path = [];
+                        while (node) {
+                          path.unshift(node.board);
+                          node = node.parent;
+                        }
+                        console.log(path);
+                        let path_step = 0;
+                        const interval = setInterval(() => {
+                          if (path_step === path.length-1) clearInterval(interval);
+                          this.setState({positions: path[path_step]});
+                          path_step++;
+                        }, 500);
+                      } else {
+
                       }
-                      console.log(path);
-                      let path_step = 0;
-                      const interval = setInterval(() => {
-                        if (path_step === path.length-1) clearInterval(interval);
-                        this.setState({positions: path[path_step]});
-                        path_step++;
-                      }, 500);
+
                     }}
             >Solve</Button>
             <Typography variant="p" component="div" >
