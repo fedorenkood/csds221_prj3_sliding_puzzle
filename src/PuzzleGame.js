@@ -1,6 +1,6 @@
 import Heap from 'heap-js';
 
-class PuzzleState {
+export class PuzzleState {
     constructor(board, zero_pos, n, m, moves, goal_dict, parent) {
         this.board = board;
         this.zero_pos = zero_pos;
@@ -76,51 +76,20 @@ class PuzzleState {
     }
 }
 
-class SlidingPuzzleGame {
-    constructor(n, m, tiles) {
+export class SlidingPuzzleGame {
+    constructor(n, m) {
         this.n = n;
         this.m = m;
-        this.tiles = tiles;
     }
-
-    update_tiles(board) {
-        for (let i = 0; i < this.n; i++) {
-            for (let j = 0; j < this.m; j++) {
-                this.tiles[i][j] = board[i][j];
-            }
-        }
-    }
-
-    // Shuffle the puzzle by randomly swapping the empty tile with one of its neighbors
-    shuffle() {
-        // Find the position of the empty tile
-        let x, y;
-        for (let i = 0; i < this.n; i++) {
-            for (let j = 0; j < this.m; j++) {
-                if (this.tiles[i][j] === 0) {
-                    x = i;
-                    y = j;
-                }
-            }
-        }
-        let goal_state = new PuzzleState(this.tiles, [x, y], this.n, this.m, 0, null, null);
-        // Generate a list of neighboring tiles
-        const neighborStates = goal_state.get_neighbors();
-        const neighbors = [];
-        for (let i = 0; i < neighborStates.length; i++) {
-            neighbors.push(neighborStates[i].board);
-        }
-
-        // Randomly select a neighboring tile and swap it with the empty tile
-        const randIndex = Math.floor(Math.random() * neighbors.length);
-        this.update_tiles(neighbors[randIndex]);
+    generateDefaultArr(n, m) {
+        const arr = [...Array(n*m).keys()].map(i => i);
+        const newArr = [];
+        while(arr.length) newArr.push(arr.splice(0,m));
+        return newArr;
     }
 
     solve(board) {
-        const goal = Array.from(Array(this.n), (x, i) =>
-            Array.from(Array(this.m), (y, j) => (j + 1) + i * this.m)
-        );
-        goal[this.n - 1][this.m - 1] = 0;
+        const goal = this.generateDefaultArr(this.n, this.m);
         const goal_dict = {};
         for (let i = 0; i < this.n; i++) {
             for (let j = 0; j < this.m; j++) {
@@ -168,17 +137,6 @@ class SlidingPuzzleGame {
             }
         }
         return -1;
-    }
-
-    // Animate the solution by updating the puzzle to each state in the path
-    animateSolution(path) {
-        let path_step = 0;
-        const interval = setInterval(() => {
-            if (path_step === path.length) clearInterval(interval);
-            this.update_tiles(path[path_step]);
-            // this.updatePuzzle();
-            path_step++;
-        }, 500);
     }
 
     // Helper function to deep copy an array

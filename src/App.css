@@ -54,7 +54,12 @@ body,
 }
 .container {
   display: flex;
+  flex-direction: column;
 }
+.controls {
+  margin: auto;
+}
+
 .container .game {
   margin: auto auto;
   text-align: center;
