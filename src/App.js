@@ -168,14 +168,14 @@ export default function App(props) {
                        error={nError}
                        helperText={nText}
                        onChange={(e) => {
-                         const regex = /^[2-6\b]+$/;
+                         const regex = /^[2-5\b]+$/;
                          if (e.target.value === "" || regex.test(e.target.value)) {
                            setNField(parseInt(e.target.value));
                            setNError(false);
                            setNText('');
                          } else {
-                           setNError(false);
-                           setNText('N must be a number between 2 and 6.');
+                           setNError(true);
+                           setNText('N must be a number between 2 and 5.');
                          }
                        }}
             />
@@ -184,7 +184,7 @@ export default function App(props) {
                        error={mError}
                        helperText={mText}
                        onChange={(e) => {
-                         const regex = /^[2-6\b]+$/;
+                         const regex = /^[2-5\b]+$/;
                          if (e.target.value === "" || regex.test(e.target.value)) {
                            setMField(parseInt(e.target.value));
                            setMError(false);
@@ -226,6 +226,9 @@ export default function App(props) {
                       for (let i = 0; i < 10; i++) {
                         board = shuffle(board);
                       }
+
+                      let emptyIndex = findIndex(board, 0);
+                      setEmptyIndex(emptyIndex);
                       setPositions(board);
                     }}
             >Shuffle</Button>
