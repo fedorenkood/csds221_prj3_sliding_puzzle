@@ -200,7 +200,7 @@ export default function App(props) {
             <Button variant="outlined"
                     className="interaction-button"
                     onClick={(e) => {
-                      if (!(n===nField && m === mField) && nField > 0 && mField > 0) {
+                      if (!(n===nField && m === mField) && nField > 1 && mField > 1  && nField <= 5 && mField <= 5) {
                         let [arr, emptyIndex, layout] = generateBasicVars(nField, mField);
                         setN(nField);
                         setM(mField);
