@@ -23,6 +23,7 @@ export default function App(props) {
   const [mText, setMText] = useState('');
   const [nField, setNField] = useState(n);
   const [mField, setMField] = useState(m);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   useEffect(() => {
     let [arr, emptyIndex, layout] = generateBasicVars(n, m);
@@ -115,6 +116,41 @@ export default function App(props) {
     });
   }
 
+  function* solvePuzzle() {
+    let solver = new SlidingPuzzleGame(n, m);
+    let node = solver.solve(positions);
+    const path = [];
+    while (node) {
+      path.unshift(node.board);
+      node = node.parent;
+    }
+    console.log(path);
+    let path_step = 0;
+    const interval = setInterval(() => {
+      if (path_step === path.length-1) clearInterval(interval);
+      setPositions(path[path_step]);
+      path_step++;
+    }, 500);
+  }
+
+  function run(gen, mili){
+    const iter = gen();
+    const end = Date.now() + mili;
+    do {
+      const {value,done} = iter.next();
+      if(done) return value;
+      if(end < Date.now()){
+        console.log("Halted function, took longer than " + mili + " miliseconds");
+        enqueueSnackbar('Solution is too long!', {
+          variant: "error",
+          autoHideDuration: 5000
+          // anchorOrigin: { vertical: "top", horizontal: "right" }
+        });
+        return null;
+      }
+    }while(true);
+  }
+
   return (
       <div id="main" className="container">
         <div className="game" style={{width: m*77+'px', height: n*77+'px'}}>
@@ -165,8 +201,16 @@ export default function App(props) {
           >Update Size</Button>
           <Button variant="outlined"
                   onClick={(e) => {
+                    let [arr, emptyIndex, layout] = generateBasicVars(n, m);
+                    setPositions(arr);
+                    setEmptyIndex(emptyIndex);
+                    setLayout(layout);
+                  }}
+          >Reset</Button>
+          <Button variant="outlined"
+                  onClick={(e) => {
                     let board = positions;
-                    for (let i = 0; i < 100; i++) {
+                    for (let i = 0; i < 10; i++) {
                       board = shuffle(board);
                     }
                     setPositions(board);
@@ -174,23 +218,15 @@ export default function App(props) {
           >Shuffle</Button>
           <Button variant="outlined"
                   onClick={(e) => {
-                    if (n *m <= 20) {
-                      let solver = new SlidingPuzzleGame(n, m);
-                      let node = solver.solve(positions);
-                      const path = [];
-                      while (node) {
-                        path.unshift(node.board);
-                        node = node.parent;
-                      }
-                      console.log(path);
-                      let path_step = 0;
-                      const interval = setInterval(() => {
-                        if (path_step === path.length-1) clearInterval(interval);
-                        setPositions(path[path_step]);
-                        path_step++;
-                      }, 500);
+                    if (n*m <= 20) {
+                      const res1 = run(solvePuzzle, 5000);
+                      console.log("run(A,1000) = " + res1); //halted
                     } else {
-
+                      enqueueSnackbar('The maximum size of sliding puzzle that is solvable is 4x5!', {
+                        variant: "error",
+                        autoHideDuration: 5000
+                        // anchorOrigin: { vertical: "top", horizontal: "right" }
+                      });
                     }
 
                   }}
