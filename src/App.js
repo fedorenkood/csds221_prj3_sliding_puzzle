@@ -5,33 +5,33 @@ import {PuzzleState, SlidingPuzzleGame} from './PuzzleGame';
 import Button from '@mui/material/Button';
 import {TextField, Typography} from "@mui/material";
 import {SnackbarProvider, useSnackbar} from "notistack";
+import {useEffect, useState} from "react";
 
 function range(size, startAt = 0) {
   return [...Array(size).keys()].map(i => i + startAt);
 }
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    const n = 3;
-    const m = 3;
-    let [arr, emptyIndex, layout] = this.generateBasicVars(n, m);
-    this.state = {
-      n: n,
-      m: m,
-      nError: false,
-      mError: false,
-      nText: '',
-      mText: '',
-      nField: n,
-      mField: m,
-      positions: arr,
-      emptyIndex: emptyIndex,
-      layout: layout,
-    }
-  }
+export default function App(props) {
+  const [n, setN] = useState(3);
+  const [m, setM] = useState(3);
+  const [positions, setPositions] = useState([]);
+  const [emptyIndex, setEmptyIndex] = useState([0, 0]);
+  const [layout, setLayout] = useState([]);
+  const [nError, setNError] = useState(false);
+  const [mError, setMError] = useState(false);
+  const [nText, setNText] = useState('');
+  const [mText, setMText] = useState('');
+  const [nField, setNField] = useState(n);
+  const [mField, setMField] = useState(m);
 
-  findIndex(board, item) {
+  useEffect(() => {
+    let [arr, emptyIndex, layout] = generateBasicVars(n, m);
+    setPositions(arr);
+    setEmptyIndex(emptyIndex);
+    setLayout(layout);
+  }, [n, m]);
+
+  const findIndex = (board, item) => {
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[0].length; j++) {
         if (board[i][j] === item) {
@@ -41,16 +41,16 @@ class App extends React.Component {
     }
   }
 
-  generateDefaultArr(n, m) {
+  const generateDefaultArr = (n, m) => {
     const arr = range(n*m, 0);
     const newArr = [];
     while(arr.length) newArr.push(arr.splice(0,m));
     return newArr;
   }
 
-  generateBasicVars(n, m) {
-    let arr = this.generateDefaultArr(n, m);
-    let emptyIndex = this.findIndex(arr, 0);
+  const generateBasicVars = (n, m) => {
+    let arr = generateDefaultArr(n, m);
+    let emptyIndex = findIndex(arr, 0);
     const layout = range(n*m, 0).map(k => {
       const row = Math.floor(k / m);
       const col = k % m;
@@ -59,23 +59,22 @@ class App extends React.Component {
     return [arr, emptyIndex, layout]
   }
 
-  updatePosition(item) {
-    let {positions, emptyIndex} = this.state;
-    let targetIndex = this.findIndex(positions, item);
+  const updatePosition = (item) => {
+    let targetIndex = findIndex(positions, item);
+    let board = positions;
     let dx = Math.abs(targetIndex[1] - emptyIndex[1]);
     let dy = Math.abs(targetIndex[0] - emptyIndex[0]);
     if (dy + dx === 1) {
-      positions[targetIndex[0]][targetIndex[1]] = 0;
-      positions[emptyIndex[0]][emptyIndex[1]] = item;
-      emptyIndex = targetIndex;
-      console.log(positions);
-
-      this.setState({positions, emptyIndex});
+      board[targetIndex[0]][targetIndex[1]] = 0;
+      board[emptyIndex[0]][emptyIndex[1]] = item;
+      console.log(board);
+      setEmptyIndex(targetIndex);
+      setPositions(board);
     }
   }
 
   // Shuffle the puzzle by randomly swapping the empty tile with one of its neighbors
-  shuffle(board) {
+  const shuffle = (board) => {
     let n = board.length;
     let m = board[0].length;
     // Find the position of the empty tile
@@ -101,101 +100,105 @@ class App extends React.Component {
     return neighbors[randIndex];
   }
 
-  renderBlock(key, cellClass, x, y) {
+  const renderBlock = (key, cellClass, x, y) => {
     return <div  key={key}
                  className={cellClass}
-                 onClick={() => this.updatePosition(key)}
+                 onClick={() => updatePosition(key)}
                  style={{transform: 'translate3d('+x+'px,'+y+'px,0) scale(1.1)'}}>{key}</div>
   }
 
-  renderBlocks() {
-    return this.state.positions.flat().map((i, key)=> {
+  const renderBlocks = () => {
+    return positions.flat().map((i, key)=> {
       let cellClass = key ? 'cell':'empty cell';
-      let [x,y] = this.state.layout[this.state.positions.flat().indexOf(key)];
-      return this.renderBlock(key, cellClass, x, y)
+      let [x,y] = layout[positions.flat().indexOf(key)];
+      return renderBlock(key, cellClass, x, y)
     });
   }
 
-  render() {
-    return (
-        <div id="main" className="container">
-          <div className="game" style={{width: this.state.m*77+'px', height: this.state.n*77+'px'}}>
-            {this.renderBlocks()}
-          </div>
-          <div className="controls">
-            <TextField id="outlined-basic" label="Size N" variant="outlined"
-                       error={this.state.nError}
-                       helperText={this.state.nText}
-                       onChange={(e) => {
-                         const regex = /^[2-6\b]+$/;
-                         if (e.target.value === "" || regex.test(e.target.value)) {
-                           this.setState({nField: e.target.value, nError: false, nText: ''});
-                         } else {
-                           this.setState({nError: true, nText: 'N must be a number between 2 and 6.'});
-                         }
-                       }}
-            />
-            <TextField id="outlined-basic" label="Size M" variant="outlined"
-                       error={this.state.mError}
-                       helperText={this.state.mText}
-                       onChange={(e) => {
-                         const regex = /^[2-6\b]+$/;
-                         if (e.target.value === "" || regex.test(e.target.value)) {
-                           this.setState({mField: e.target.value, mError: false, mText: ''});
-                         } else {
-                           this.setState({mError: true, mText: 'M must be a number between 2 and 5.'});
-                         }
-                       }}
-            />
-            <Button variant="outlined"
-                    onClick={(e) => {
-                      let n = this.state.nField;
-                      let m = this.state.mField;
-                      if (!(n===this.state.n && m === this.state.m) && this.state.n > 0 && this.state.m > 0) {
-                        let [arr, emptyIndex, layout] = this.generateBasicVars(n, m);
-                        this.setState({n: n, m: m, positions: arr, emptyIndex: emptyIndex, layout: layout})
+  return (
+      <div id="main" className="container">
+        <div className="game" style={{width: m*77+'px', height: n*77+'px'}}>
+          {renderBlocks()}
+        </div>
+        <div className="controls">
+          <TextField id="outlined-basic" label="Size N" variant="outlined"
+                     error={nError}
+                     helperText={nText}
+                     onChange={(e) => {
+                       const regex = /^[2-6\b]+$/;
+                       if (e.target.value === "" || regex.test(e.target.value)) {
+                         setNField(parseInt(e.target.value));
+                         setNError(false);
+                         setNText('');
+                       } else {
+                         setNError(false);
+                         setNText('N must be a number between 2 and 6.');
+                       }
+                     }}
+          />
+          <TextField id="outlined-basic" label="Size M" variant="outlined"
+                     error={mError}
+                     helperText={mText}
+                     onChange={(e) => {
+                       const regex = /^[2-6\b]+$/;
+                       if (e.target.value === "" || regex.test(e.target.value)) {
+                         setMField(parseInt(e.target.value));
+                         setMError(false);
+                         setMText('');
+                       } else {
+                         setMError(true);
+                         setMText('M must be a number between 2 and 5.');
+                       }
+                     }}
+          />
+          <Button variant="outlined"
+                  onClick={(e) => {
+                    if (!(n===nField && m === mField) && nField > 0 && mField > 0) {
+                      let [arr, emptyIndex, layout] = generateBasicVars(nField, mField);
+                      setN(nField);
+                      setM(mField);
+                      setPositions(arr);
+                      setEmptyIndex(emptyIndex);
+                      setLayout(layout);
+                    }
+                  }}
+          >Update Size</Button>
+          <Button variant="outlined"
+                  onClick={(e) => {
+                    let board = positions;
+                    for (let i = 0; i < 100; i++) {
+                      board = shuffle(board);
+                    }
+                    setPositions(board);
+                  }}
+          >Shuffle</Button>
+          <Button variant="outlined"
+                  onClick={(e) => {
+                    if (n *m <= 20) {
+                      let solver = new SlidingPuzzleGame(n, m);
+                      let node = solver.solve(positions);
+                      const path = [];
+                      while (node) {
+                        path.unshift(node.board);
+                        node = node.parent;
                       }
-                    }}
-            >Update Size</Button>
-            <Button variant="outlined"
-                    onClick={(e) => {
-                      let positions = this.state.positions;
-                      for (let i = 0; i < 100; i++) {
-                        positions = this.shuffle(positions);
-                      }
-                      this.setState({positions});
-                    }}
-            >Shuffle</Button>
-            <Button variant="outlined"
-                    onClick={(e) => {
-                      let {n, m, positions} = this.state;
-                      if (n *m <= 20) {
-                        let solver = new SlidingPuzzleGame(n, m);
-                        let node = solver.solve(positions);
-                        const path = [];
-                        while (node) {
-                          path.unshift(node.board);
-                          node = node.parent;
-                        }
-                        console.log(path);
-                        let path_step = 0;
-                        const interval = setInterval(() => {
-                          if (path_step === path.length-1) clearInterval(interval);
-                          this.setState({positions: path[path_step]});
-                          path_step++;
-                        }, 500);
-                      } else {
+                      console.log(path);
+                      let path_step = 0;
+                      const interval = setInterval(() => {
+                        if (path_step === path.length-1) clearInterval(interval);
+                        setPositions(path[path_step]);
+                        path_step++;
+                      }, 500);
+                    } else {
 
-                      }
+                    }
 
-                    }}
-            >Solve</Button>
-            <Typography variant="p" component="div" >
-              FRAMEWORKS
-            </Typography>
-          </div>
-        </div>)
-  }
+                  }}
+          >Solve</Button>
+          <Typography variant="p" component="div" >
+            FRAMEWORKS
+          </Typography>
+        </div>
+      </div>)
 }
 
-export default App;
