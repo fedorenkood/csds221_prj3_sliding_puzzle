@@ -1,14 +1,13 @@
-import logo from './logo.svg';
-import './App.css';
-import * as React from 'react';
-import {PuzzleState, SlidingPuzzleGame} from './PuzzleGame';
-import Button from '@mui/material/Button';
-import {TextField, Typography} from "@mui/material";
-import {SnackbarProvider, useSnackbar} from "notistack";
-import {useEffect, useState} from "react";
+import "./App.css";
+import * as React from "react";
+import { PuzzleState, SlidingPuzzleGame } from "./PuzzleGame";
+import Button from "@mui/material/Button";
+import { TextField, Typography } from "@mui/material";
+import { SnackbarProvider, useSnackbar } from "notistack";
+import { useEffect, useState } from "react";
 
 function range(size, startAt = 0) {
-  return [...Array(size).keys()].map(i => i + startAt);
+  return [...Array(size).keys()].map((i) => i + startAt);
 }
 
 export default function App(props) {
@@ -16,11 +15,12 @@ export default function App(props) {
   const [m, setM] = useState(3);
   const [positions, setPositions] = useState([]);
   const [emptyIndex, setEmptyIndex] = useState([0, 0]);
+  const [updating, setUpdating] = useState(false);
   const [layout, setLayout] = useState([]);
   const [nError, setNError] = useState(false);
   const [mError, setMError] = useState(false);
-  const [nText, setNText] = useState('');
-  const [mText, setMText] = useState('');
+  const [nText, setNText] = useState("");
+  const [mText, setMText] = useState("");
   const [nField, setNField] = useState(n);
   const [mField, setMField] = useState(m);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -36,29 +36,29 @@ export default function App(props) {
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[0].length; j++) {
         if (board[i][j] === item) {
-          return ([i, j]);
+          return [i, j];
         }
       }
     }
-  }
+  };
 
   const generateDefaultArr = (n, m) => {
-    const arr = range(n*m, 0);
+    const arr = range(n * m, 0);
     const newArr = [];
-    while(arr.length) newArr.push(arr.splice(0,m));
+    while (arr.length) newArr.push(arr.splice(0, m));
     return newArr;
-  }
+  };
 
   const generateBasicVars = (n, m) => {
     let arr = generateDefaultArr(n, m);
     let emptyIndex = findIndex(arr, 0);
-    const layout = range(n*m, 0).map(k => {
+    const layout = range(n * m, 0).map((k) => {
       const row = Math.floor(k / m);
       const col = k % m;
       return [80 * col, 80 * row];
     });
-    return [arr, emptyIndex, layout]
-  }
+    return [arr, emptyIndex, layout];
+  };
 
   const updatePosition = (item) => {
     let targetIndex = findIndex(positions, item);
@@ -72,7 +72,7 @@ export default function App(props) {
       setEmptyIndex(targetIndex);
       setPositions(board);
     }
-  }
+  };
 
   // Shuffle the puzzle by randomly swapping the empty tile with one of its neighbors
   const shuffle = (board) => {
@@ -99,24 +99,32 @@ export default function App(props) {
     // Randomly select a neighboring tile and swap it with the empty tile
     const randIndex = Math.floor(Math.random() * neighbors.length);
     return neighbors[randIndex];
-  }
+  };
 
   const renderBlock = (key, cellClass, x, y) => {
-    return <div  key={key}
-                 className={cellClass}
-                 onClick={() => updatePosition(key)}
-                 style={{transform: 'translate3d('+x+'px,'+y+'px,0) scale(1.1)'}}>{key}</div>
-  }
+    return (
+      <div
+        key={key}
+        className={cellClass}
+        onClick={() => updatePosition(key)}
+        style={{
+          transform: "translate3d(" + x + "px," + y + "px,0) scale(1.1)"
+        }}
+      >
+        {key}
+      </div>
+    );
+  };
 
   const renderBlocks = () => {
-    return positions.flat().map((i, key)=> {
-      let cellClass = key ? 'cell':'empty cell';
-      let [x,y] = layout[positions.flat().indexOf(key)];
-      return renderBlock(key, cellClass, x, y)
+    return positions.flat().map((i, key) => {
+      let cellClass = key ? "cell" : "empty cell";
+      let [x, y] = layout[positions.flat().indexOf(key)];
+      return renderBlock(key, cellClass, x, y);
     });
-  }
+  };
 
-  function* solvePuzzle() {
+  function solvePuzzle() {
     let solver = new SlidingPuzzleGame(n, m);
     let node = solver.solve(positions);
     const path = [];
@@ -132,124 +140,165 @@ export default function App(props) {
     console.log(path);
     let path_step = 0;
     const interval = setInterval(() => {
-      if (path_step === path.length-1) clearInterval(interval);
+      if (path_step === path.length - 1) {
+        clearInterval(interval);
+        setUpdating(false);
+      }
       setPositions(path[path_step]);
       path_step++;
     }, 500);
   }
 
-  function run(gen, mili){
+  function run(gen, mili) {
     const iter = gen();
     const end = Date.now() + mili;
     do {
-      const {value,done} = iter.next();
-      if(done) return value;
-      if(end < Date.now()){
-        console.log("Halted function, took longer than " + mili + " miliseconds");
-        enqueueSnackbar('Solution is too long!', {
+      const { value, done } = iter.next();
+      if (done) return value;
+      if (end < Date.now()) {
+        console.log(
+          "Halted function, took longer than " + mili + " miliseconds"
+        );
+        enqueueSnackbar("Solution is too long!", {
           variant: "error",
           autoHideDuration: 5000
           // anchorOrigin: { vertical: "top", horizontal: "right" }
         });
         return null;
       }
-    }while(true);
+    } while (true);
   }
 
   return (
-      <div id="main" className="container">
-        <div className="game" style={{width: m*77+'px', height: n*77+'px'}}>
-          {renderBlocks()}
+    <div id="main" className="container">
+      <div
+        className="game"
+        style={{ width: m * 77 + "px", height: n * 77 + "px" }}
+      >
+        {renderBlocks()}
+      </div>
+      <div className="controls">
+        <div className="row-container">
+          <TextField
+            id="outlined-basic"
+            label="Size N"
+            variant="outlined"
+            className="interaction-button"
+            error={nError}
+            helperText={nText}
+            onChange={(e) => {
+              const regex = /^[2-5]{1}$/;
+              if (e.target.value === "" || regex.test(e.target.value)) {
+                setNField(parseInt(e.target.value));
+                setNError(false);
+                setNText("");
+              } else {
+                setNError(true);
+                setNText("N must be a number between 2 and 5.");
+              }
+            }}
+          />
+          <TextField
+            id="outlined-basic"
+            label="Size M"
+            variant="outlined"
+            className="interaction-button"
+            error={mError}
+            helperText={mText}
+            onChange={(e) => {
+              const regex = /^[2-5]{1}$/;
+              if (e.target.value === "" || regex.test(e.target.value)) {
+                setMField(parseInt(e.target.value));
+                setMError(false);
+                setMText("");
+              } else {
+                setMError(true);
+                setMText("M must be a number between 2 and 5.");
+              }
+            }}
+          />
         </div>
-        <div className="controls">
-          <div className="row-container">
-            <TextField id="outlined-basic" label="Size N" variant="outlined"
-                       className="interaction-button"
-                       error={nError}
-                       helperText={nText}
-                       onChange={(e) => {
-                         const regex = /^[2-5\b]+$/;
-                         if (e.target.value === "" || regex.test(e.target.value)) {
-                           setNField(parseInt(e.target.value));
-                           setNError(false);
-                           setNText('');
-                         } else {
-                           setNError(true);
-                           setNText('N must be a number between 2 and 5.');
-                         }
-                       }}
-            />
-            <TextField id="outlined-basic" label="Size M" variant="outlined"
-                       className="interaction-button"
-                       error={mError}
-                       helperText={mText}
-                       onChange={(e) => {
-                         const regex = /^[2-5\b]+$/;
-                         if (e.target.value === "" || regex.test(e.target.value)) {
-                           setMField(parseInt(e.target.value));
-                           setMError(false);
-                           setMText('');
-                         } else {
-                           setMError(true);
-                           setMText('M must be a number between 2 and 5.');
-                         }
-                       }}
-            />
-          </div>
-          <div className="row-container">
-            <Button variant="outlined"
-                    className="interaction-button"
-                    onClick={(e) => {
-                      if (!(n===nField && m === mField) && nField > 1 && mField > 1  && nField <= 5 && mField <= 5) {
-                        let [arr, emptyIndex, layout] = generateBasicVars(nField, mField);
-                        setN(nField);
-                        setM(mField);
-                        setPositions(arr);
-                        setEmptyIndex(emptyIndex);
-                        setLayout(layout);
-                      }
-                    }}
-            >Update Size</Button>
-            <Button variant="outlined"
-                    className="interaction-button"
-                    onClick={(e) => {
-                      let [arr, emptyIndex, layout] = generateBasicVars(n, m);
-                      setPositions(arr);
-                      setEmptyIndex(emptyIndex);
-                      setLayout(layout);
-                    }}
-            >Reset</Button>
-            <Button variant="outlined"
-                    className="interaction-button"
-                    onClick={(e) => {
-                      let board = positions;
-                      for (let i = 0; i < 10; i++) {
-                        board = shuffle(board);
-                      }
+        <div className="row-container">
+          <Button
+            disabled={updating}
+            variant="outlined"
+            className="interaction-button"
+            onClick={(e) => {
+              if (
+                !(n === nField && m === mField) &&
+                nField > 1 &&
+                mField > 1 &&
+                nField <= 5 &&
+                mField <= 5
+              ) {
+                let [arr, emptyIndex, layout] = generateBasicVars(
+                  nField,
+                  mField
+                );
+                setN(nField);
+                setM(mField);
+                setPositions(arr);
+                setEmptyIndex(emptyIndex);
+                setLayout(layout);
+              }
+            }}
+          >
+            Update Size
+          </Button>
+          <Button
+            disabled={updating}
+            variant="outlined"
+            className="interaction-button"
+            onClick={(e) => {
+              let [arr, emptyIndex, layout] = generateBasicVars(n, m);
+              setPositions(arr);
+              setEmptyIndex(emptyIndex);
+              setLayout(layout);
+            }}
+          >
+            Reset
+          </Button>
+          <Button
+            disabled={updating}
+            variant="outlined"
+            className="interaction-button"
+            onClick={(e) => {
+              let board = positions;
+              for (let i = 0; i < 10; i++) {
+                board = shuffle(board);
+              }
 
-                      let emptyIndex = findIndex(board, 0);
-                      setEmptyIndex(emptyIndex);
-                      setPositions(board);
-                    }}
-            >Shuffle</Button>
-            <Button variant="outlined"
-                    className="interaction-button"
-                    onClick={(e) => {
-                      if (n*m <= 20) {
-                        const res1 = run(solvePuzzle, 5000);
-                        console.log("run(A,1000) = " + res1); //halted
-                      } else {
-                        enqueueSnackbar('The maximum size of sliding puzzle that is solvable is 4x5!', {
-                          variant: "error",
-                          autoHideDuration: 5000
-                          // anchorOrigin: { vertical: "top", horizontal: "right" }
-                        });
-                      }
-
-                    }}
-            >Solve</Button>
-          </div>
+              let emptyIndex = findIndex(board, 0);
+              setEmptyIndex(emptyIndex);
+              setPositions(board);
+            }}
+          >
+            Shuffle
+          </Button>
+          <Button
+            disabled={updating}
+            variant="outlined"
+            className="interaction-button"
+            onClick={(e) => {
+              if (n * m <= 20) {
+                setUpdating(true);
+                solvePuzzle();
+              } else {
+                enqueueSnackbar(
+                  "The maximum size of sliding puzzle that is solvable is 4x5!",
+                  {
+                    variant: "error",
+                    autoHideDuration: 5000
+                    // anchorOrigin: { vertical: "top", horizontal: "right" }
+                  }
+                );
+              }
+            }}
+          >
+            Solve
+          </Button>
         </div>
-      </div>)
+      </div>
+    </div>
+  );
 }
-
