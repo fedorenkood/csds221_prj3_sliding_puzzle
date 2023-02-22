@@ -1,10 +1,11 @@
-import "./App.css";
+import "./index.css";
 import * as React from "react";
 import { PuzzleState, SlidingPuzzleGame } from "./PuzzleGame";
 import Button from "@mui/material/Button";
 import { TextField, Typography } from "@mui/material";
 import { SnackbarProvider, useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
+import Box from "@mui/material/Box";
 
 function range(size, startAt = 0) {
   return [...Array(size).keys()].map((i) => i + startAt);
@@ -186,8 +187,8 @@ export default function App(props) {
         {renderBlocks()}
       </div>
       <div className="controls">
-        <div className="row-container">
-          <Button
+        <Box className="row-container" sx={{ justifyContent: "center" }}>
+          {/* <Button
             disabled={updating}
             // component={Link}
             href="https://en.wikipedia.org/wiki/Sliding_puzzle"
@@ -198,8 +199,18 @@ export default function App(props) {
             sx={{ width: "100%" }}
           >
             How to play
-          </Button>
-        </div>
+          </Button> */}
+          <Typography
+            variant="p"
+            component="p"
+            sx={{ textAlign: "center", width: "450px" }}
+          >
+            This game is called a sliding puzzle game. There are variations with
+            different horizontal and vertical sizes. So, you can change them as
+            sizes of N*M matrix. The game starts in a goal position and you can
+            shuffle the game and try to bring it back to the goal position.
+          </Typography>
+        </Box>
         <div className="row-container">
           <TextField
             id="outlined-basic"
