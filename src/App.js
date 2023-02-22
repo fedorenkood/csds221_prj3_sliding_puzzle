@@ -68,9 +68,17 @@ export default function App(props) {
     if (dy + dx === 1) {
       board[targetIndex[0]][targetIndex[1]] = 0;
       board[emptyIndex[0]][emptyIndex[1]] = item;
-      console.log(board);
+      // console.log(board);
       setEmptyIndex(targetIndex);
       setPositions(board);
+      let arr = generateDefaultArr(n, m);
+      if (JSON.stringify(board) === JSON.stringify(arr)) {
+        enqueueSnackbar("You have reached the goal state!", {
+          variant: "success",
+          autoHideDuration: 5000
+          // anchorOrigin: { vertical: "top", horizontal: "right" }
+        });
+      }
     }
   };
 
@@ -137,7 +145,7 @@ export default function App(props) {
       autoHideDuration: 5000
       // anchorOrigin: { vertical: "top", horizontal: "right" }
     });
-    console.log(path);
+    // console.log(path);
     let path_step = 0;
     const interval = setInterval(() => {
       if (path_step === path.length - 1) {
@@ -178,6 +186,20 @@ export default function App(props) {
         {renderBlocks()}
       </div>
       <div className="controls">
+        <div className="row-container">
+          <Button
+            disabled={updating}
+            // component={Link}
+            href="https://en.wikipedia.org/wiki/Sliding_puzzle"
+            variant="outlined"
+            target="_blank"
+            className="interaction-button"
+            onClick={(e) => {}}
+            sx={{ width: "100%" }}
+          >
+            How to play
+          </Button>
+        </div>
         <div className="row-container">
           <TextField
             id="outlined-basic"
@@ -280,12 +302,12 @@ export default function App(props) {
             variant="outlined"
             className="interaction-button"
             onClick={(e) => {
-              if (n * m <= 20) {
+              if (n * m <= 16) {
                 setUpdating(true);
                 solvePuzzle();
               } else {
                 enqueueSnackbar(
-                  "The maximum size of sliding puzzle that is solvable is 4x5!",
+                  "The maximum size of sliding puzzle that is solvable is 4x4!",
                   {
                     variant: "error",
                     autoHideDuration: 5000
